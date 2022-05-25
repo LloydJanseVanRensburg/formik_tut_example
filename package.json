@@ -12,7 +12,8 @@
   "dependencies": {
     "formik": "^2.2.9",
     "react": "17.0.2",
-    "react-native": "0.68.2"
+    "react-native": "0.68.2",
+    "channels-components": "./channels-components/"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
