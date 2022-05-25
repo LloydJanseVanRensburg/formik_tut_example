@@ -1,112 +1,236 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
-
 import React from 'react';
-import type {Node} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import {StyleSheet, View} from 'react-native';
+import {Button, Input, Typography} from 'channels-components/components';
+import {ThemeProvider, createTheme} from 'channels-components/apis';
+import {useFormik} from 'formik';
+import * as Yup from 'yup';
+import {ScrollView} from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
-
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+const customTheme = createTheme({
+  colors: {
+    primary: 'purple',
   },
 });
 
+const validationSchema = Yup.object({
+  firstName: Yup.string().required('Required!'),
+  lastName: Yup.string().required('Required!'),
+  email: Yup.string().email('Please provide valid email').required('Required!'),
+  password: Yup.string()
+    .min(6, 'Min of 6 characters')
+    .max(20, 'Max of 20 characters')
+    .required('Required!'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('password')], 'Confirm password should match password')
+    .required('Required!'),
+});
+
+const registerHandler = async formData => {
+  return new Promise((resolve, reject) => {
+    if (formData.email === 'hello@gmail.com') {
+      reject({
+        email: 'Email already taken',
+      });
+      return;
+    }
+
+    setTimeout(() => {
+      resolve('ok');
+    }, 2500);
+  });
+};
+
+const App = () => {
+  const formik = useFormik({
+    initialValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+    validationSchema,
+    onSubmit,
+  });
+
+  async function onSubmit(values) {
+    try {
+      formik.setSubmitting(true);
+      await registerHandler(values);
+      formik.resetForm();
+    } catch (error) {
+      formik.setErrors(error);
+    } finally {
+      formik.setSubmitting(true);
+    }
+  }
+
+  return (
+    <ThemeProvider theme={customTheme}>
+      <ScrollView style={styles.screen}>
+        <Typography variant="h1">Register Form</Typography>
+
+        <View style={styles.spacing}>
+          <Typography
+            variant="body1"
+            style={
+              formik.touched.firstName && formik.errors.firstName
+                ? styles.error
+                : {}
+            }>
+            First Name
+          </Typography>
+          <Input
+            value={formik.values.firstName}
+            onChangeText={formik.handleChange('firstName')}
+            onBlur={formik.handleBlur('firstName')}
+            style={
+              formik.touched.firstName && formik.errors.firstName
+                ? styles.error
+                : {}
+            }
+          />
+          {formik.touched.firstName && formik.errors.firstName && (
+            <Typography variant="body2" style={styles.error}>
+              {formik.errors.firstName}
+            </Typography>
+          )}
+        </View>
+
+        <View style={styles.spacing}>
+          <Typography
+            variant="body1"
+            style={
+              formik.touched.lastName && formik.errors.lastName
+                ? styles.error
+                : {}
+            }>
+            Last Name
+          </Typography>
+          <Input
+            value={formik.values.lastName}
+            onChangeText={formik.handleChange('lastName')}
+            onBlur={formik.handleBlur('lastName')}
+            style={
+              formik.touched.lastName && formik.errors.lastName
+                ? styles.error
+                : {}
+            }
+          />
+          {formik.touched.lastName && formik.errors.lastName && (
+            <Typography variant="body2" style={styles.error}>
+              {formik.errors.lastName}
+            </Typography>
+          )}
+        </View>
+
+        <View style={styles.spacing}>
+          <Typography
+            variant="body1"
+            style={
+              formik.touched.email && formik.errors.email ? styles.error : {}
+            }>
+            Email Name
+          </Typography>
+          <Input
+            value={formik.values.email}
+            onChangeText={formik.handleChange('email')}
+            onBlur={formik.handleBlur('email')}
+            style={
+              formik.touched.email && formik.errors.email ? styles.error : {}
+            }
+          />
+          {formik.touched.email && formik.errors.email && (
+            <Typography variant="body2" style={styles.error}>
+              {formik.errors.email}
+            </Typography>
+          )}
+        </View>
+
+        <View style={styles.spacing}>
+          <Typography
+            variant="body1"
+            style={
+              formik.touched.password && formik.errors.password
+                ? styles.error
+                : {}
+            }>
+            Password
+          </Typography>
+          <Input
+            value={formik.values.password}
+            onChangeText={formik.handleChange('password')}
+            onBlur={formik.handleBlur('password')}
+            secureTextEntry
+            style={
+              formik.touched.password && formik.errors.password
+                ? styles.error
+                : {}
+            }
+          />
+          {formik.touched.password && formik.errors.password && (
+            <Typography variant="body2" style={styles.error}>
+              {formik.errors.password}
+            </Typography>
+          )}
+        </View>
+
+        <View style={styles.spacing}>
+          <Typography
+            variant="body1"
+            style={
+              formik.touched.confirmPassword && formik.errors.confirmPassword
+                ? styles.error
+                : {}
+            }>
+            Confirm Password
+          </Typography>
+          <Input
+            value={formik.values.confirmPassword}
+            onChangeText={formik.handleChange('confirmPassword')}
+            onBlur={formik.handleBlur('confirmPassword')}
+            secureTextEntry
+            style={
+              formik.touched.confirmPassword && formik.errors.confirmPassword
+                ? styles.error
+                : {}
+            }
+          />
+          {formik.touched.confirmPassword && formik.errors.confirmPassword && (
+            <Typography variant="body2" style={styles.error}>
+              {formik.errors.confirmPassword}
+            </Typography>
+          )}
+        </View>
+
+        <View style={styles.spacing}>
+          <Button
+            title="Sign up"
+            onPress={formik.handleSubmit}
+            loading={formik.isSubmitting}
+            disabled={
+              formik.isSubmitting ||
+              !formik.isValid ||
+              (!formik.dirty && formik.isValid)
+            }
+          />
+        </View>
+      </ScrollView>
+    </ThemeProvider>
+  );
+};
+
 export default App;
+
+const styles = StyleSheet.create({
+  screen: {
+    padding: 16,
+  },
+  spacing: {
+    marginVertical: 5,
+  },
+  error: {
+    borderColor: 'red',
+    color: 'red',
+  },
+});

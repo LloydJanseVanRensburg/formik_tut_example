@@ -10,10 +10,11 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "channels-components": "./channels-components/",
     "formik": "^2.2.9",
     "react": "17.0.2",
     "react-native": "0.68.2",
-    "channels-components": "./channels-components/"
+    "yup": "^0.32.11"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
