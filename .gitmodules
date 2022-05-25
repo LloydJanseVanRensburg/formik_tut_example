@@ -1,0 +1,4 @@
+[submodule "channels-components"]
+	path = channels-components
+	branch = develop
+	url = git@bitbucket.org:ukheshe-international/channels-components.git
